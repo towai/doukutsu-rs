@@ -79,7 +79,7 @@
         "motion_interpolation": "Motion interpolation:",
         "subpixel_scrolling": {
           "entry": "Subpixel Motion:",
-          "off": "Off",
+          "off": "None",
           "camera": "Camera",
           "full": "Camera + Sprites",
         },

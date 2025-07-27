@@ -77,14 +77,12 @@
           "off": "オフ"
         },
         "motion_interpolation": "モーション補間：",
-        
         "subpixel_scrolling": {
           "entry": "サブピクセル動き：",
           "off": "なし",
           "camera": "カメラ",
           "full": "カメラ + オブジェクト",
         },
-        "subpixel_scrolling": "サブピクセルスクロール：",
         "original_textures": "オリジナルテクスチャ：",
         "seasonal_textures": "季節ものテクスチャ：",
         "renderer": "レンダラ：",
