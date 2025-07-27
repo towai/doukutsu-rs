@@ -4,7 +4,7 @@ use crate::framework::context::Context;
 use crate::framework::error::GameResult;
 use crate::framework::graphics::VSyncMode;
 use crate::framework::{filesystem, graphics};
-use crate::game::shared_game_state::{CutsceneSkipMode, ScreenShakeIntensity, SharedGameState, TimingMode, WindowMode};
+use crate::game::shared_game_state::{CutsceneSkipMode, ScreenShakeIntensity, SharedGameState, TimingMode, WindowMode, SubpixelCoords};
 use crate::graphics::font::Font;
 use crate::input::combined_menu_controller::CombinedMenuController;
 use crate::menu::MenuEntry;
@@ -296,9 +296,14 @@ impl SettingsMenu {
         );
         self.graphics.push_entry(
             GraphicsMenuEntry::SubpixelScrolling,
-            MenuEntry::Toggle(
-                state.loc.t("menus.options_menu.graphics_menu.subpixel_scrolling").to_owned(),
-                state.settings.subpixel_coords,
+            MenuEntry::Options(
+                state.loc.t("menus.options_menu.graphics_menu.subpixel_scrolling.entry").to_owned(),
+                state.settings.subpixel_coords as usize,
+                vec![
+                    state.loc.t("menus.options_menu.graphics_menu.subpixel_scrolling.off").to_owned(),
+                    state.loc.t("menus.options_menu.graphics_menu.subpixel_scrolling.camera").to_owned(),
+                    state.loc.t("menus.options_menu.graphics_menu.subpixel_scrolling.full").to_owned(),
+                ],
             ),
         );
 
@@ -794,12 +799,33 @@ impl SettingsMenu {
                         *value = state.settings.motion_interpolation;
                     }
                 }
-                MenuSelectionResult::Selected(GraphicsMenuEntry::SubpixelScrolling, toggle) => {
-                    if let MenuEntry::Toggle(_, value) = toggle {
-                        state.settings.subpixel_coords = !state.settings.subpixel_coords;
-                        let _ = state.settings.save(ctx);
+                MenuSelectionResult::Selected(GraphicsMenuEntry::SubpixelScrolling, toggle)
+                | MenuSelectionResult::Right(GraphicsMenuEntry::SubpixelScrolling, toggle, _) => {
+                    use SubpixelCoords::*;
+                    if let MenuEntry::Options(_, value, _) = toggle {
+                        let (new_coords, new_value) = match *value {
+                            0 => (Camera, 1),
+                            1 => (Full, 2),
+                            _ => (Off, 0),
+                        };
+                        *value = new_value;
+                        state.settings.subpixel_coords = new_coords;
 
-                        *value = state.settings.subpixel_coords;
+                        let _ = state.settings.save(ctx);
+                    }
+                }
+                MenuSelectionResult::Left(GraphicsMenuEntry::SubpixelScrolling, toggle, _) => {
+                    use SubpixelCoords::*;
+                    if let MenuEntry::Options(_, value, _) = toggle {
+                        let (new_coords, new_value) = match *value {
+                            0 => (Full, 2),
+                            1 => (Off, 0),
+                            _ => (Camera, 1),
+                        };
+                        *value = new_value;
+                        state.settings.subpixel_coords = new_coords;
+
+                        let _ = state.settings.save(ctx);
                     }
                 }
                 MenuSelectionResult::Selected(GraphicsMenuEntry::OriginalTextures, toggle) => {

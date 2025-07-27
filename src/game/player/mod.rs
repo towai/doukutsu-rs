@@ -14,7 +14,7 @@ use crate::game::npc::list::NPCList;
 use crate::game::npc::NPC;
 use crate::game::player::skin::basic::BasicPlayerSkin;
 use crate::game::player::skin::{PlayerAnimationState, PlayerAppearanceState, PlayerSkin};
-use crate::game::shared_game_state::SharedGameState;
+use crate::game::shared_game_state::{SharedGameState, SubpixelCoords};
 use crate::input::dummy_player_controller::DummyPlayerController;
 use crate::input::player_controller::PlayerController;
 use crate::util::rng::RNG;
@@ -991,6 +991,20 @@ impl GameEntity<&NPCList> for Player {
         if !self.cond.alive() || self.cond.hidden() {
             return Ok(());
         }
+        let (mut x, mut y, mut prev_x, mut prev_y) = (self.x, self.y, self.prev_x, self.prev_y);
+        if state.settings.subpixel_coords == SubpixelCoords::Camera {
+            let subp_offsets = vec![
+                x      % (512),
+                y      % (512),
+                prev_x % (512),
+                prev_y % (512),
+            ];
+            x      -= subp_offsets[0];
+            y      -= subp_offsets[1];
+            prev_x -= subp_offsets[2];
+            prev_y -= subp_offsets[3];
+
+        }
 
         let (frame_x, frame_y) = frame.xy_interpolated(state.frame_time);
 
@@ -1014,13 +1028,13 @@ impl GameEntity<&NPCList> for Player {
                     for i in (1..=(self.dog_stack.len() as i32)).rev() {
                         batch.add_rect(
                             interpolate_fix9_scale(
-                                self.prev_x - off_x - vec_x * i - self.dog_stack[i as usize - 1].offset_x as i32,
-                                self.x - off_x - vec_x * i - self.dog_stack[i as usize - 1].offset_x as i32,
+                                prev_x - off_x - vec_x * i - self.dog_stack[i as usize - 1].offset_x as i32,
+                                x - off_x - vec_x * i - self.dog_stack[i as usize - 1].offset_x as i32,
                                 state.frame_time,
                             ) - frame_x,
                             interpolate_fix9_scale(
-                                self.prev_y - off_y - vec_y * i - (self.y - self.prev_y) * i,
-                                self.y - off_y - vec_y * i - (self.y - self.prev_y) * i,
+                                prev_y - off_y - vec_y * i - (y - prev_y) * i,
+                                y - off_y - vec_y * i - (y - prev_y) * i,
                                 state.frame_time,
                             ) - frame_y,
                             &state.constants.npc.n136_puppy_carried[frame_id],
@@ -1042,14 +1056,14 @@ impl GameEntity<&NPCList> for Player {
 
             batch.add_rect(
                 interpolate_fix9_scale(
-                    self.prev_x - self.display_bounds.left as i32,
-                    self.x - self.display_bounds.left as i32,
+                    prev_x - self.display_bounds.left as i32,
+                    x - self.display_bounds.left as i32,
                     state.frame_time,
                 ) + if self.direction == Direction::Left { -8.0 - gun_off_x as f32 } else { gun_off_x as f32 }
                     - frame_x,
                 interpolate_fix9_scale(
-                    self.prev_y - self.display_bounds.top as i32,
-                    self.y - self.display_bounds.top as i32,
+                    prev_y - self.display_bounds.top as i32,
+                    y - self.display_bounds.top as i32,
                     state.frame_time,
                 ) + self.weapon_offset_y as f32
                     + gun_off_y as f32
@@ -1065,13 +1079,13 @@ impl GameEntity<&NPCList> for Player {
                 state.texture_set.get_or_load_batch(ctx, &state.constants, self.skin.get_skin_texture_name())?;
             batch.add_rect(
                 interpolate_fix9_scale(
-                    self.prev_x - self.display_bounds.left as i32,
-                    self.x - self.display_bounds.left as i32,
+                    prev_x - self.display_bounds.left as i32,
+                    x - self.display_bounds.left as i32,
                     state.frame_time,
                 ) - frame_x,
                 interpolate_fix9_scale(
-                    self.prev_y - self.display_bounds.top as i32,
-                    self.y - self.display_bounds.top as i32,
+                prev_y - self.display_bounds.top as i32,
+                y - self.display_bounds.top as i32,
                     state.frame_time,
                 ) - frame_y,
                 &self.anim_rect,
@@ -1082,8 +1096,8 @@ impl GameEntity<&NPCList> for Player {
         if (self.equip.has_air_tank() && self.flags.in_water()) || self.control_mode == ControlMode::IronHead {
             let batch = state.texture_set.get_or_load_batch(ctx, &state.constants, "Caret")?;
             batch.add_rect(
-                interpolate_fix9_scale(self.prev_x - 12 * 0x200, self.x - 12 * 0x200, state.frame_time) - frame_x,
-                interpolate_fix9_scale(self.prev_y - 12 * 0x200, self.y - 12 * 0x200, state.frame_time) - frame_y,
+                interpolate_fix9_scale(prev_x - 12 * 0x200, x - 12 * 0x200, state.frame_time) - frame_x,
+                interpolate_fix9_scale(prev_y - 12 * 0x200, y - 12 * 0x200, state.frame_time) - frame_y,
                 &state.constants.player.frames_bubble[(self.tick / 2 % 2) as usize],
             );
             batch.draw(ctx)?;

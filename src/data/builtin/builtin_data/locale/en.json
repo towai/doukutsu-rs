@@ -77,7 +77,12 @@
           "off": "Off"
         },
         "motion_interpolation": "Motion interpolation:",
-        "subpixel_scrolling": "Subpixel scrolling:",
+        "subpixel_scrolling": {
+          "entry": "Subpixel Motion:",
+          "off": "Off",
+          "camera": "Camera",
+          "full": "Camera + Sprites",
+        },
         "original_textures": "Original textures:",
         "seasonal_textures": "Seasonal textures:",
         "renderer": "Renderer:",

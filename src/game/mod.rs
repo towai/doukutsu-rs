@@ -19,7 +19,7 @@ use crate::framework::graphics::VSyncMode;
 use crate::framework::ui::UI;
 use crate::game::filesystem_container::FilesystemContainer;
 use crate::game::settings::Settings;
-use crate::game::shared_game_state::{Fps, SharedGameState, TimingMode, WindowMode};
+use crate::game::shared_game_state::{Fps, SharedGameState, SubpixelCoords, TimingMode, WindowMode};
 use crate::graphics::texture_set::{G_MAG, I_MAG};
 use crate::scene::loading_scene::LoadingScene;
 use crate::scene::Scene;
@@ -247,7 +247,7 @@ impl Game {
             state_ref.frame_time = if state_ref.settings.motion_interpolation { n1 / n2 } else { 1.0 };
         }
         unsafe {
-            G_MAG = if state_ref.settings.subpixel_coords { state_ref.scale } else { 1.0 };
+            G_MAG = if state_ref.settings.subpixel_coords != SubpixelCoords::Off { state_ref.scale } else { 1.0 };
             I_MAG = state_ref.scale;
         }
         self.loops = 0;

@@ -2325,7 +2325,14 @@ impl Scene for GameScene {
         match key_code {
             ScanCode::F3 => state.settings.god_mode = !state.settings.god_mode,
             ScanCode::F4 => state.settings.infinite_booster = !state.settings.infinite_booster,
-            ScanCode::F5 => state.settings.subpixel_coords = !state.settings.subpixel_coords,
+            ScanCode::F5 => {
+                use crate::game::shared_game_state::SubpixelCoords::*;
+                state.settings.subpixel_coords = match state.settings.subpixel_coords {
+                    Off => Camera,
+                    Camera => Full,
+                    Full => Off,
+                };
+            },
             ScanCode::F6 => state.settings.motion_interpolation = !state.settings.motion_interpolation,
             ScanCode::F7 => state.set_speed(1.0),
             ScanCode::F8 => {

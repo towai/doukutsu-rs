@@ -5,7 +5,7 @@ use crate::framework::gamepad::{Axis, AxisDirection, Button, PlayerControllerInp
 use crate::framework::graphics::VSyncMode;
 use crate::framework::keyboard::ScanCode;
 use crate::game::player::TargetPlayer;
-use crate::game::shared_game_state::{CutsceneSkipMode, ScreenShakeIntensity, TimingMode, WindowMode};
+use crate::game::shared_game_state::{CutsceneSkipMode, ScreenShakeIntensity, SubpixelCoords, TimingMode, WindowMode};
 use crate::input::combined_player_controller::CombinedPlayerController;
 use crate::input::gamepad_player_controller::GamepadController;
 use crate::input::keyboard_player_controller::KeyboardController;
@@ -23,8 +23,8 @@ pub struct Settings {
     pub shader_effects: bool,
     #[serde(default = "default_true")]
     pub light_cone: bool,
-    #[serde(default = "default_true")]
-    pub subpixel_coords: bool,
+    #[serde(default = "default_subpixel_coords")]
+    pub subpixel_coords: SubpixelCoords,
     #[serde(default = "default_true")]
     pub motion_interpolation: bool,
     pub touch_controls: bool,
@@ -95,7 +95,7 @@ fn default_true() -> bool {
 
 #[inline(always)]
 fn current_version() -> u32 {
-    25
+    26
 }
 
 #[inline(always)]
@@ -111,6 +111,11 @@ fn default_window_mode() -> WindowMode {
 #[inline(always)]
 fn default_interpolation() -> InterpolationMode {
     InterpolationMode::Linear
+}
+
+#[inline(always)]
+fn default_subpixel_coords() -> SubpixelCoords {
+    SubpixelCoords::Full
 }
 
 #[inline(always)]
@@ -359,6 +364,11 @@ impl Settings {
             }
         }
 
+        if self.version == 25 {
+            self.version = 26;
+            self.subpixel_coords = SubpixelCoords::Full;
+        }
+
         if self.version != initial_version {
             log::info!("Upgraded configuration file from version {} to {}.", initial_version, self.version);
         }
@@ -432,7 +442,7 @@ impl Default for Settings {
             original_textures: false,
             shader_effects: false,
             light_cone: true,
-            subpixel_coords: true,
+            subpixel_coords: SubpixelCoords::Full,
             motion_interpolation: true,
             touch_controls: cfg!(target_os = "android"),
             display_touch_controls: true,

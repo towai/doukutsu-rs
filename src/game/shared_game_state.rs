@@ -73,6 +73,13 @@ impl TimingMode {
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, serde::Serialize, serde::Deserialize)]
+pub enum SubpixelCoords {
+    Off,
+    Camera,
+    Full,
+}
+
+#[derive(PartialEq, Eq, Copy, Clone, serde::Serialize, serde::Deserialize)]
 pub enum WindowMode {
     Windowed,
     Fullscreen,
